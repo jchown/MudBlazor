@@ -1,0 +1,77 @@
+﻿@using System.Collections.Generic
+@namespace MudBlazor.UnitTests.TestComponents
+
+Example to show incorrect caching of child items.
+
+<MudTreeView ServerData="LoadServerData" Items="TreeItems">
+    <ItemTemplate>
+        <MudTreeViewItem Value="@context" Icon="@context.Icon" LoadingIconColor="Color.Info" CanExpand="@context.CanExpand" Text="@context.Title" EndText="@context.Number?.ToString()" />
+    </ItemTemplate>
+</MudTreeView>
+
+<MudButton Variant="Variant.Filled" OnClick="SetLabelAAA">AAA</MudButton>
+<MudButton Variant="Variant.Filled" OnClick="SetLabelBBB">BBB</MudButton>
+
+@code{
+    private string Label { get; set; } = "AAA";
+    
+    private HashSet<TreeItemData> TreeItems { get; set; } = new HashSet<TreeItemData>();
+
+    public class TreeItemData
+    {
+        public string Title { get; set; }
+
+        public string Icon { get; set; }
+
+        public int? Number { get; set; }
+        
+        public bool CanExpand { get; set; }
+
+        public HashSet<TreeItemData> TreeItems { get; set; }
+
+        public TreeItemData(string title, string icon, int? number = null, bool canExpand = true)
+        {
+            Title = title;
+            Icon = icon;
+            Number = number;
+            CanExpand = canExpand;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        BuildTree();
+    }
+    
+    void BuildTree()
+    {
+        TreeItems.Clear();
+        
+        TreeItems.Add(new TreeItemData(Label, Icons.Material.Filled.Label)
+        {
+            TreeItems = new HashSet<TreeItemData>()
+            {
+                new($"{Label} - 1", Icons.Material.Filled.Label),
+                new($"{Label} - 2", Icons.Material.Filled.Label),
+                new($"{Label} - 3", Icons.Material.Filled.Label),
+            }
+        });
+    }
+    
+    public Task<HashSet<TreeItemData>> LoadServerData(TreeItemData parentNode)
+    {
+        return Task.FromResult(parentNode.TreeItems);
+    }
+    
+    public void SetLabelAAA()
+    {
+        Label = "AAA";
+        BuildTree();
+    }
+
+    public void SetLabelBBB()
+    {
+        Label = "BBB";
+        BuildTree();
+    }
+}

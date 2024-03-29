@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using FluentAssertions;
@@ -396,6 +397,42 @@ namespace MudBlazor.UnitTests.Components
 
             comparer.Equals(treeItem, null).Should().BeFalse();
             comparer.Equals(null, treeItem).Should().BeFalse();
+        }
+        
+        
+        [Test]
+        public async Task TreeView_DoesntCacheServerDataChildren_WhenParentChanges()
+        {
+            var comp = Context.RenderComponent<TreeViewTest8>();
+            var item = comp.FindComponent<MudTreeViewItem<TreeViewTest8.TreeItemData>>();
+
+            var buttons = comp.FindAll("button").ToList();
+            var buttonAAA = buttons.First(b => b.InnerHtml.Contains("AAA"));
+            var buttonBBB = buttons.First(b => b.InnerHtml.Contains("BBB"));
+
+            buttonAAA.Click();
+            await comp.InvokeAsync(() => item.Instance.OnItemExpanded(true));
+            comp.WaitForAssertion(() => item.Instance.Expanded.Should().BeTrue());
+
+            var aaa = item.FindComponents<MudText>();
+            aaa[0].Markup.Should().EndWith("AAA</p>");
+            aaa[1].Markup.Should().EndWith("AAA - 1</p>");
+            aaa[2].Markup.Should().EndWith("AAA - 2</p>");
+            aaa[3].Markup.Should().EndWith("AAA - 3</p>");
+            
+            await comp.InvokeAsync(() => item.Instance.OnItemExpanded(false));
+            
+            buttonBBB.Click();
+            item = comp.FindComponent<MudTreeViewItem<TreeViewTest8.TreeItemData>>();
+
+            await comp.InvokeAsync(() => item.Instance.OnItemExpanded(true));
+            comp.WaitForAssertion(() => item.Instance.Expanded.Should().BeTrue());
+
+            var bbb = item.FindComponents<MudText>();
+            bbb[0].Markup.Should().EndWith("BBB</p>");
+            bbb[1].Markup.Should().EndWith("BBB - 1</p>");
+            bbb[2].Markup.Should().EndWith("BBB - 2</p>");
+            bbb[3].Markup.Should().EndWith("BBB - 3</p>");
         }
     }
 }

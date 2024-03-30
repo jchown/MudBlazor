@@ -374,5 +374,15 @@ namespace MudBlazor
 
             return null;
         }
+
+        /// <summary>
+        /// Force refresh of children, to be used in the case that the "server" objects have changed.
+        /// </summary>
+        public async Task ReloadChildrenAsync()
+        {
+            //  See https://github.com/MudBlazor/MudBlazor/issues/8413    
+            foreach (var item in _childItems)
+                await item.ReloadAsync();
+        }
     }
 }

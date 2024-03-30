@@ -3,7 +3,7 @@
 
 Example to show incorrect caching of child items.
 
-<MudTreeView ServerData="LoadServerData" Items="TreeItems">
+<MudTreeView ServerData="LoadServerData" Items="TreeItems" @ref="treeView">
     <ItemTemplate>
         <MudTreeViewItem Value="@context" Icon="@context.Icon" LoadingIconColor="Color.Info" CanExpand="@context.CanExpand" Text="@context.Title" EndText="@context.Number?.ToString()" />
     </ItemTemplate>
@@ -14,6 +14,8 @@ Example to show incorrect caching of child items.
 
 @code{
     private string Label { get; set; } = "AAA";
+    
+    private MudTreeView<TreeItemData> treeView;
     
     private HashSet<TreeItemData> TreeItems { get; set; } = new HashSet<TreeItemData>();
 
@@ -49,7 +51,7 @@ Example to show incorrect caching of child items.
         
         TreeItems.Add(new TreeItemData(Label, Icons.Material.Filled.Label)
         {
-            TreeItems = new HashSet<TreeItemData>()
+            TreeItems = new HashSet<TreeItemData>
             {
                 new($"{Label} - 1", Icons.Material.Filled.Label),
                 new($"{Label} - 2", Icons.Material.Filled.Label),
@@ -63,15 +65,17 @@ Example to show incorrect caching of child items.
         return Task.FromResult(parentNode.TreeItems);
     }
     
-    public void SetLabelAAA()
+    public async Task SetLabelAAA()
     {
         Label = "AAA";
         BuildTree();
+        await treeView.ReloadChildrenAsync();
     }
 
-    public void SetLabelBBB()
+    public async Task SetLabelBBB()
     {
         Label = "BBB";
         BuildTree();
+        await treeView.ReloadChildrenAsync();
     }
 }
